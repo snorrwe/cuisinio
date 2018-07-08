@@ -1,13 +1,15 @@
 use rocket_contrib::Json;
 
+use super::RECIPE_COLLECTION;
 use model::recipe::Recipe;
 use services::mongo_client::MongoClient;
-
-const RECIPE_COLLECTION: &str = "recipes"; // TODO: abstract this
 
 #[post("/recipe", data = "<recipe>")]
 pub fn new_recipe(recipe: Json<Recipe>) -> String {
     let recipe = recipe.into_inner();
+    if !recipe.is_valid() {
+        panic!("Recipe is not valid!")
+    }
     let recipe = bson!(recipe);
     let result = MongoClient::default()
         .collection(RECIPE_COLLECTION)

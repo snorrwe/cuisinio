@@ -2,33 +2,31 @@ use bson::oid::ObjectId;
 use bson::Bson;
 use rocket_contrib::Json;
 
+use super::RECIPE_COLLECTION;
 use model::recipe::Recipe;
+use model::step::Step;
 use services::mongo_client::MongoClient;
 
-const RECIPE_COLLECTION: &str = "recipes"; // TODO: abstract this
-
 #[post("/optimise", data = "<recipes>")]
-fn optimise_workflow(recipes: Json<Vec<String>>) -> String {
-    let ids: Vec<ObjectId> = recipes
+fn optimise_workflow(recipes: Json<Vec<String>>) -> Json<Vec<Step>> {
+    let ids = recipes
         .into_inner()
         .iter()
-        .map(|id| ObjectId::with_string(&id).unwrap())
+        .map(|id| bson!(ObjectId::with_string(&id).unwrap()))
         .collect();
 
     let filter = doc!{
         "_id" => doc! {
-            "$in" => bson!(ids)
+            "$in" => Bson::Array(ids)
         },
     };
 
     let result: Vec<Recipe> = MongoClient::default()
         .collection(RECIPE_COLLECTION)
-        .find(None, None)
+        .find(Some(filter), None)
         .unwrap()
-        .map(|doc| {
-            let doc = doc.unwrap();
-            Recipe::from(doc)
-        })
+        .map(|doc| Recipe::from(doc.unwrap()))
         .collect();
+
     unimplemented!()
 }

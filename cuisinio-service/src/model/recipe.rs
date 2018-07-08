@@ -10,6 +10,24 @@ pub struct Recipe {
     pub steps: Vec<Step>,
 }
 
+impl Recipe {
+    // TODO: tests
+    pub fn is_valid(&self) -> bool {
+        let len = self.steps.len();
+        let has_invalid = self.steps.iter().enumerate().any(|(index, ref step)| {
+            if let Some(ref deps) = step.dependencies {
+                deps.iter().any(|&dep| {
+                    let dep = dep as usize;
+                    dep == index || dep >= len
+                })
+            } else {
+                false
+            }
+        });
+        !has_invalid
+    }
+}
+
 impl From<Recipe> for OrderedDocument {
     fn from(recipe: Recipe) -> OrderedDocument {
         let steps = recipe.steps.iter().map(|s| bson!(s)).collect();
