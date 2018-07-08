@@ -1,4 +1,5 @@
-use bson;
+use bson::ordered::OrderedDocument;
+use bson::Bson;
 use rocket_contrib::Json;
 
 use model::recipe::Recipe;
@@ -7,47 +8,45 @@ use services::mongo_client::MongoClient;
 #[post("/recipe", data = "<recipe>")]
 pub fn new_recipe(recipe: Json<Recipe>) -> String {
     let recipe = recipe.into_inner();
-    let rec = recipe.clone();
-    let recipe_doc = doc! {
-        "name" => rec.name,
-        "description" => match rec.description {
-            Some(d) => d,
-            None => "".to_string(),
-        }
-    };
-    let client = MongoClient::default();
-    let collection = client.collection("recipes");
-    let recipe_result = collection.insert_one(recipe_doc, None).ok().unwrap();
-    insert_steps(
-        &recipe,
-        &recipe_result
-            .clone()
-            .inserted_id
-            .expect("Inserted Id should not be None!"),
-    );
+    let recipe = document_from_recipe(recipe);
+    let result = MongoClient::default()
+        .collection("recipes")
+        .insert_one(recipe, None)
+        .ok()
+        .unwrap();
 
-    format!("{{\"recipe_id\": {}}}", recipe_result.inserted_id.unwrap())
+    format!("{{\"recipe_id\": {}}}", result.inserted_id.unwrap())
 }
 
-fn insert_steps(recipe: &Recipe, recipe_id: &bson::Bson) {
-    let steps: Vec<bson::ordered::OrderedDocument> = recipe
+fn document_from_recipe(recipe: Recipe) -> OrderedDocument {
+    let steps = steps_from_recipe(&recipe);
+    doc! {
+        "name" => recipe.name,
+        "description" => match recipe.description {
+            Some(d) => d,
+            None => "".to_string(),
+        },
+        "steps" => steps,
+    }
+}
+
+fn steps_from_recipe(recipe: &Recipe) -> Bson {
+    let steps = recipe
         .steps
         .iter()
-        .map(|ref s| {
-            doc! {
+        .map(|s| {
+            let doc = doc! {
                 "name" => s.name.clone(),
                 "description" => match s.description {
                     Some(ref d) => d.clone(),
                     None => "".to_string(),
                 },
                 "duration_ms" => s.duration_ms,
-                "recipe_id" => recipe_id.clone(),
-            }
+            };
+            bson!(doc)
         })
         .collect();
-    let client = MongoClient::default();
-    let collection = client.collection("steps");
-    collection.insert_many(steps, None).ok().unwrap();
+    Bson::Array(steps)
 }
 
 #[get("/recipes")]
