@@ -20,7 +20,6 @@ impl MongoClient {
             None => 27017,
         };
         MongoClient {
-            // TODO: parametrise connection
             client: Client::connect(host, port).unwrap(),
         }
     }
