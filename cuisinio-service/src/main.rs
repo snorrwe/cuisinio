@@ -10,17 +10,12 @@ extern crate serde_json;
 extern crate bson;
 extern crate mongodb;
 
-use rocket_contrib::Json;
-
 mod controllers;
 mod model;
 mod services;
-use controllers::recipes::*;
 
-#[post("/optimise", data = "<recipes>")]
-fn optimise_workflow(recipes: Json<Vec<String>>) -> String {
-    unimplemented!()
-}
+use controllers::recipes::*;
+use controllers::workflows::*;
 
 fn main() {
     rocket::ignite()
