@@ -20,6 +20,9 @@ use controllers::workflows::*;
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![new_recipe, list_recipes, optimise_workflow])
+        .mount(
+            "/",
+            routes![get_recipe, new_recipe, list_recipes, optimise_workflow],
+        )
         .launch();
 }
