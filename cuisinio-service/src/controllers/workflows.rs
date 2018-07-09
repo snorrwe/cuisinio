@@ -15,13 +15,13 @@ fn optimise_workflow(recipes: Json<Vec<String>>) -> Json<Vec<Step>> {
         .map(|id| bson!(ObjectId::with_string(&id).unwrap()))
         .collect();
 
-    let filter = doc!{
+    let filter = doc! {
         "_id" => doc! {
             "$in" => Bson::Array(ids)
         },
     };
 
-    let result: Vec<Recipe> = MongoClient::default()
+    let affected_recipes: Vec<Recipe> = MongoClient::default()
         .collection(RECIPE_COLLECTION)
         .find(Some(filter), None)
         .unwrap()

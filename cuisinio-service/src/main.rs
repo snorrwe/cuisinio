@@ -9,6 +9,7 @@ extern crate serde_json;
 #[macro_use(bson, doc)]
 extern crate bson;
 extern crate mongodb;
+extern crate serde;
 
 mod controllers;
 mod model;

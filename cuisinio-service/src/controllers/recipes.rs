@@ -16,7 +16,10 @@ pub fn new_recipe(recipe: Json<Recipe>) -> String {
         .insert_one(recipe, None)
         .ok()
         .unwrap();
-    format!("{{\"recipe_id\": {}}}", result.inserted_id.unwrap())
+    format!(
+        "{{\"recipe_id\": {}}}",
+        result.inserted_id.unwrap().to_string()
+    )
 }
 
 #[get("/recipes")]
