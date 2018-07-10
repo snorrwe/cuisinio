@@ -19,7 +19,10 @@ pub fn new_recipe(recipe: Json<Recipe>) -> Json<RecipeDto> {
         panic!("Recipe is not valid!")
     }
     let recipe = bson!(recipe);
-    let result = MongoClient::default()
+
+    let mongo_client = MongoClient::default();
+
+    let result = mongo_client
         .collection(RECIPE_COLLECTION)
         .insert_one(recipe, None)
         .ok()
@@ -30,17 +33,31 @@ pub fn new_recipe(recipe: Json<Recipe>) -> Json<RecipeDto> {
         _ => "".to_string(),
     };
 
-    get_recipe(id)
+    let recipe = read_recipe_from_client(&id, &mongo_client);
+    let result = RecipeDto {
+        _id: id,
+        recipe: recipe,
+    };
+    Json(result)
 }
 
 #[get("/recipe/<id>")]
 pub fn get_recipe(id: String) -> Json<RecipeDto> {
-    let oid = ObjectId::with_string(&id).unwrap();
+    let recipe = read_recipe_from_client(&id, &MongoClient::default());
+    let result = RecipeDto {
+        _id: id,
+        recipe: recipe,
+    };
+    Json(result)
+}
+
+fn read_recipe_from_client(id: &String, client: &MongoClient) -> Recipe {
+    let oid = ObjectId::with_string(id).unwrap();
     let filter = doc! {
         "_id" => oid
     };
 
-    let result = MongoClient::default()
+    let result = client
         .collection(RECIPE_COLLECTION)
         .find_one(Some(filter), None)
         .unwrap()
@@ -48,17 +65,18 @@ pub fn get_recipe(id: String) -> Json<RecipeDto> {
             "Recipe with id [{}] was not found in the database!",
             id
         ));
+    Recipe::from(result)
+}
 
-    let result = RecipeDto {
-        _id: id,
-        recipe: Recipe::from(result),
-    };
-
-    Json(result)
+#[derive(Serialize, Deserialize)]
+pub struct BriefRecipeDto {
+    pub _id: String,
+    pub name: String,
+    pub description: Option<String>,
 }
 
 #[get("/recipes")]
-pub fn list_recipes() -> Json<Vec<RecipeDto>> {
+pub fn list_recipes() -> Json<Vec<BriefRecipeDto>> {
     let result = MongoClient::default()
         .collection(RECIPE_COLLECTION)
         .find(None, None)
@@ -69,9 +87,11 @@ pub fn list_recipes() -> Json<Vec<RecipeDto>> {
                 Bson::ObjectId(id) => id.to_hex(),
                 _ => "".to_string(),
             };
-            RecipeDto {
+            let recipe = Recipe::from(doc);
+            BriefRecipeDto {
                 _id: id,
-                recipe: Recipe::from(doc.clone()),
+                name: recipe.name,
+                description: recipe.description,
             }
         })
         .collect();
