@@ -37,7 +37,7 @@ pub fn new_recipe(recipe: Json<Recipe>) -> Json<RecipeDto> {
 pub fn get_recipe(id: String) -> Json<RecipeDto> {
     let oid = ObjectId::with_string(&id).unwrap();
     let filter = doc! {
-        "_id" => oid 
+        "_id" => oid
     };
 
     let result = MongoClient::default()
@@ -49,10 +49,9 @@ pub fn get_recipe(id: String) -> Json<RecipeDto> {
             id
         ));
 
-    let result = Recipe::from(result);
     let result = RecipeDto {
         _id: id,
-        recipe: result,
+        recipe: Recipe::from(result),
     };
 
     Json(result)

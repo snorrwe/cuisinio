@@ -16,7 +16,7 @@ impl Recipe {
     pub fn is_valid(&self) -> bool {
         let len = self.steps.len();
         let has_invalid = self.graph.iter().any(|(x, y)| *x >= len || *y >= len);
-        !has_invalid
+        !has_invalid || self.graph.has_circle()
     }
 }
 
@@ -66,19 +66,21 @@ impl From<OrderedDocument> for Recipe {
                 .get("graph")
                 .expect("Document did not contain 'graph' field!")
             {
-                Bson::Array(array) => array
-                    .iter()
-                    .map(|pair| match pair {
-                        Bson::Array(pair) => {
-                            let mut pair = pair[0..2].iter().map(|x| match x {
-                                Bson::I64(x) => x.clone() as usize,
-                                _ => panic!("Expected graph pairs to be i32"),
-                            });
-                            (pair.next().unwrap(), pair.next().unwrap())
-                        }
-                        _ => (0, 0),
-                    })
-                    .collect(),
+                Bson::Array(array) => Graph::new(
+                    array
+                        .iter()
+                        .map(|pair| match pair {
+                            Bson::Array(pair) => {
+                                let mut pair = pair[0..2].iter().map(|x| match x {
+                                    Bson::I64(x) => x.clone() as usize,
+                                    _ => panic!("Expected graph pairs to be i32"),
+                                });
+                                (pair.next().unwrap(), pair.next().unwrap())
+                            }
+                            _ => (0, 0),
+                        })
+                        .collect(),
+                ),
                 _ => graph![],
             },
         }
