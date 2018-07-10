@@ -4,11 +4,11 @@ use rocket_contrib::Json;
 
 use super::RECIPE_COLLECTION;
 use model::recipe::Recipe;
-use model::step::Step;
+use model::workflow::Workflow;
 use services::mongo_client::MongoClient;
 
 #[post("/optimise", data = "<recipes>")]
-fn optimise_workflow(recipes: Json<Vec<String>>) -> Json<Vec<Step>> {
+fn optimise_workflow(recipes: Json<Vec<String>>) -> Json<Workflow> {
     let ids = recipes
         .into_inner()
         .iter()

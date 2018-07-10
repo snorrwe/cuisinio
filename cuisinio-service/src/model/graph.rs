@@ -29,6 +29,7 @@ impl Graph {
         result
     }
 
+    // TODO: replace this with custom deserialization
     pub fn init(&mut self) {
         if self.edges.len() != self.raw_edges.len() {
             let mut edges = EdgeMap::new();
