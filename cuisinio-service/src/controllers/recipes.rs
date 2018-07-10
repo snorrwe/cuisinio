@@ -56,7 +56,6 @@ fn read_recipe_from_client(id: &String, client: &MongoClient) -> Recipe {
     let filter = doc! {
         "_id" => oid
     };
-
     let result = client
         .collection(RECIPE_COLLECTION)
         .find_one(Some(filter), None)
