@@ -42,6 +42,27 @@ impl From<Recipe> for OrderedDocument {
 
 impl From<OrderedDocument> for Recipe {
     fn from(doc: OrderedDocument) -> Recipe {
+        let graph = doc
+            .get("graph")
+            .expect("Document did not contain 'graph' field!");
+        let graph = match graph {
+            Bson::Array(array) => Graph::new(
+                array
+                    .iter()
+                    .map(|pair| match pair {
+                        Bson::Array(pair) => {
+                            let mut pair = pair[0..2].iter().map(|x| match x {
+                                Bson::I64(x) => x.clone() as usize,
+                                _ => panic!("Expected graph pairs to be i32"),
+                            });
+                            (pair.next().unwrap(), pair.next().unwrap())
+                        }
+                        _ => (0, 0),
+                    })
+                    .collect(),
+            ),
+            _ => graph![],
+        };
         Recipe {
             name: doc
                 .get("name")
@@ -62,27 +83,7 @@ impl From<OrderedDocument> for Recipe {
                 }
                 _ => vec![],
             },
-            graph: match doc
-                .get("graph")
-                .expect("Document did not contain 'graph' field!")
-            {
-                Bson::Array(array) => Graph::new(
-                    array
-                        .iter()
-                        .map(|pair| match pair {
-                            Bson::Array(pair) => {
-                                let mut pair = pair[0..2].iter().map(|x| match x {
-                                    Bson::I64(x) => x.clone() as usize,
-                                    _ => panic!("Expected graph pairs to be i32"),
-                                });
-                                (pair.next().unwrap(), pair.next().unwrap())
-                            }
-                            _ => (0, 0),
-                        })
-                        .collect(),
-                ),
-                _ => graph![],
-            },
+            graph: graph,
         }
     }
 }
