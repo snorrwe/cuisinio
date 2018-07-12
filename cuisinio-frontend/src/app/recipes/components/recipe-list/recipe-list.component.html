@@ -1,0 +1,9 @@
+<ul *ngIf="recipes" class="list-group">
+    <li *ngFor="let recipe of recipes" class="list-group-item">
+        <h5 (click)="select(recipe)">{{recipe.name}}</h5>
+        <div>Description: {{recipe.description}}</div>
+    </li>
+</ul>
+<div *ngIf="recipes && !recipes.length">
+    No recipes found! Try adding your own!
+</div>

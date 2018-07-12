@@ -1,0 +1,26 @@
+<form class="form-group" (submit)="onSubmit()" [formGroup]="form">
+    <div>
+        <label>Recipe name</label>
+        <input class="form-control" formControlName="name" required />
+    </div>
+    <div>
+        <label>Recipe description</label>
+        <input class="form-control" formControlName="description" />
+    </div>
+    <div *ngFor="let key of steps; let i = $index">
+        <div>
+            <label>Name</label>
+            <input class="form-control" required [formControlName]="key+'_name'" />
+        </div>
+        <div>
+            <label>Description</label>
+            <input class="form-control" [formControlName]="key+'_description'" />
+        </div>
+        <div>
+            <label>Duration (minutes)</label>
+            <input type="number" required class="form-control" [formControlName]="key+'_duration_minutes'" />
+        </div>
+    </div>
+    <button class="btn btn-default" (click)="addStep($event)">Add step</button>
+    <input class="btn btn-primary" type="submit" />
+</form>

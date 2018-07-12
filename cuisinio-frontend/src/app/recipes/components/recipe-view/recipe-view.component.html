@@ -1,0 +1,16 @@
+<div *ngIf="recipe">
+    <h1>{{recipe.name}}</h1>
+
+    <div>
+        {{recipe.description}}
+    </div>
+
+    <ul *ngFor="let step of recipe.steps">
+        {{step.name}}
+        {{step.description}}
+        {{step.duration_ms}} milliseconds
+    </ul>
+</div>
+<div *ngIf="!recipe">
+    <h1>Please select a recipe!</h1>
+</div>

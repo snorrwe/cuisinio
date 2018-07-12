@@ -25,8 +25,11 @@ use controllers::workflows::*;
 fn main() {
     let options = rocket_cors::Cors {
         allowed_origins: AllowedOrigins::all(),
-        allowed_methods: vec![Method::Get].into_iter().map(From::from).collect(),
-        allowed_headers: AllowedHeaders::some(&["Authorization", "Accept"]),
+        allowed_methods: vec![Method::Get, Method::Post]
+            .into_iter()
+            .map(From::from)
+            .collect(),
+        allowed_headers: AllowedHeaders::all(),
         allow_credentials: true,
         ..Default::default()
     };
